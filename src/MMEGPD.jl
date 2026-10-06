@@ -3,15 +3,15 @@ module MMEGPD
 # ─────────────────────────────────────────────────────────────
 # Standard library — no installation required
 # ─────────────────────────────────────────────────────────────
-using Random
-using LinearAlgebra
-using Statistics
 using Base.Threads
 
 
 # ─────────────────────────────────────────────────────────────
 # Packages — need to be installed
 # ─────────────────────────────────────────────────────────────
+using Random
+using LinearAlgebra
+using Statistics
 using Distributions
 using Interpolations
 using BSplines
