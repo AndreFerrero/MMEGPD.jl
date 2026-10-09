@@ -76,7 +76,7 @@ end
 
 
 # This is the main dispatcher function with the core logic
-function simulate_megpd_chain(
+function simulate_markov_megpd(
     n_steps,
     kappa,
     sigma,
@@ -133,7 +133,7 @@ function multiple_megpd_chains(
     Threads.@threads for i in 1:n_chains
 
         println("Simulation:", i)
-        sim = simulate_megpd_chain(
+        sim = simulate_markov_megpd(
             n_steps,
             kappa,
             sigma,
@@ -151,7 +151,7 @@ function multiple_megpd_chains(
 end
 
 # this is the dispatcher for the case where delta needs to be reconstructed from the r grid and the estimated delta
-function simulate_megpd_chain(
+function simulate_markov_megpd(
     n_steps,
     kappa,
     sigma,
@@ -165,7 +165,7 @@ function simulate_megpd_chain(
 
     delta_interp = build_delta_interp(r_grid, delta_hat)
 
-    return simulate_megpd_chain(
+    return simulate_markov_megpd(
         n_steps,
         kappa,
         sigma,
@@ -195,7 +195,7 @@ function multiple_megpd_chains(
 
     Threads.@threads for i in 1:n_chains
         println("Simulation:", i)
-        sim = simulate_megpd_chain(
+        sim = simulate_markov_megpd(
             n_steps,
             kappa,
             sigma,
@@ -214,7 +214,7 @@ function multiple_megpd_chains(
 end
 
 # this is the dispatcher for currently implemented delta functions organised by symbols
-function simulate_megpd_chain(
+function simulate_markov_megpd(
     n_steps,
     kappa,
     sigma,
@@ -227,7 +227,7 @@ function simulate_megpd_chain(
 
     delta = get_delta(delta_name)
 
-    simulate_megpd_chain(
+    simulate_markov_megpd(
         n_steps,
         kappa,
         sigma,
