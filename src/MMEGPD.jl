@@ -58,6 +58,7 @@ include("laplace.jl")
 
 # Public API
 export simulate_markov_megpd, multiple_megpd_chains, megpd_joint,
+  fit_markov_megpd_splines,
   megpd_marginal, spline_confidence_band, plot_spline, laplace_optimize, laplace_grid_search,
   delta_strong_upper, delta08, get_delta, delta_spline
 
