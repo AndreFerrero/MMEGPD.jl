@@ -2,33 +2,6 @@
 # 1. Penalty matrix utilities
 # -----------------------------------------------------------------------
 
-
-# NOTE: `laplace_log_marginal` below uses `fit.S` (the exact penalty
-# matrix built inside `fit_markov_megpd_splines`), not these builders --
-# they're kept as standalone utilities for diagnostics / sanity checks
-# (e.g. confirming rank(S) == K - p) rather than as part of the main path.
-
-"""
-    build_D(K, p)
-
-Order-p difference matrix acting on a length-K coefficient vector
-(standard P-spline penalty construction).
-"""
-function build_D(K::Int, p::Int)
-    D = Matrix{Float64}(I, K, K)
-    for _ in 1:p
-        D = diff(D, dims=1)
-    end
-    return D
-end
-
-"""
-    build_P(K, p)
-
-Penalty matrix P = D_p' D_p. Rank-deficient by construction: rank(P) = K - p.
-"""
-build_P(K::Int, p::Int) = (D=build_D(K, p); D' * D)
-
 """
     pseudo_logdet(P; tol=1e-8)
 
