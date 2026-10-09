@@ -200,7 +200,7 @@ from the previous evaluation.
 function laplace_optimize(x, K::Int64;
     spline=:pspline, knot_method=:even,
     degree::Int=3, p::Int=2,
-    map=true,
+    map=true, logR = false,
     lower::Float64=0.0, upper::Float64=4.0,
     tol_rank::Float64=1e-8,
     beta_init=nothing, kappa_init::Float64=1.0,
@@ -218,7 +218,7 @@ function laplace_optimize(x, K::Int64;
         fit = MMEGPD.fit_markov_megpd_splines(
             x, K; spline=spline, knot_method=knot_method,
             degree=degree, p=p, lambda=lam,
-            map=map,
+            map=map, logR = logR,
             beta_init=c.beta, kappa_init=c.kappa,
             sigma_init=c.sigma, xi_init=c.xi,
             verbose=verbose, x_reltol=x_reltol, g_abstol=g_abstol)
@@ -234,12 +234,14 @@ function laplace_optimize(x, K::Int64;
     best_lambda = 10.0 ^ best_log10_lambda
     best_logL = -Optim.minimum(res)
 
+    println("Optimal lambda found at $best_lambda; fitting the model with optimal lambda \n")
+    
     c = cache[]
     best_fit = MMEGPD.fit_markov_megpd_splines(
         x, K; spline=spline, knot_method=knot_method,
         degree=degree, p=p,
         lambda=best_lambda,
-        map=false,
+        map=false, logR = logR,
         beta_init=c.beta, kappa_init=c.kappa,
         sigma_init=c.sigma, xi_init=c.xi,
         verbose=verbose, x_reltol=x_reltol)
@@ -300,6 +302,7 @@ function laplace_grid_search(
                 p=p,
                 lambda=λ,
                 map=map,
+                logR = logR,
                 beta_init=c.beta,
                 kappa_init=c.kappa,
                 sigma_init=c.sigma,

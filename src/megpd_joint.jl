@@ -5,7 +5,8 @@ function megpd_joint(
     sigma,
     xi,
     delta;
-    lpdf = false
+    lpdf = false,
+    logR = false
 )
 
     # Support is x,y > 0
@@ -27,7 +28,12 @@ function megpd_joint(
     end
 
     # Angular scale
-    delta_r = max(delta(r), 0.01)
+    if logR==true
+        delta_r = delta(log.(r .+ 1))
+    else
+        delta_r = delta(r)
+    end
+    delta_r = max(delta_r, 0.01)
 
     # log(x/y)
     log_ratio = log(x) - log(y)
