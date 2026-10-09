@@ -4,8 +4,9 @@ function spline_confidence_band(
     extrapolate = true,
     level = 0.95
 )
-    # Indicator of the scale used for estimation
+    # Information on the scale used for estimation
     r_logscale = fit.logR
+    logRshift = fit.logRshift
 
     basis = fit.basis
     beta = fit.beta
@@ -52,7 +53,7 @@ function spline_confidence_band(
                 )
             end
 
-            z_eval = log(r)
+            z_eval = log(r .+ logRshift)
 
         else
             z_eval = r
@@ -161,11 +162,12 @@ function plot_spline(
     # ------------------------------------------------------------------
 
     R_fit = fit.R
+    logRshift = fit.logRshift
 
     # Recover the natural-radius values represented by fit.R.
     if fit.logR == true
 
-        R_natural = exp.(R_fit)
+        R_natural = exp.(R_fit) .- logRshift
 
     else
 
@@ -234,8 +236,8 @@ function plot_spline(
 
     elseif xscale == :log
 
-        x_grid = log.(r_grid)
-        xlabel = "log(r)"
+        x_grid = log.(r_grid .+ logRshift)
+        xlabel = "log(r + $logRshift)"
 
     else
 

@@ -5,7 +5,8 @@ function megpd_marginal(
     xi,
     delta;
     lpdf = false,
-    logR = false
+    logR = false,
+    logRshift = 0.0
 )
 
     marg, err =
@@ -18,7 +19,8 @@ function megpd_marginal(
                     sigma,
                     xi,
                     delta;
-                    logR = logR
+                    logR = logR,
+                    logRshift = logRshift
                 ),
             1e-10,
             Inf

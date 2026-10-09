@@ -6,7 +6,8 @@ function megpd_joint(
     xi,
     delta;
     lpdf = false,
-    logR = false
+    logR = false,
+    logRshift = 0.0
 )
 
     # Support is x,y > 0
@@ -29,7 +30,7 @@ function megpd_joint(
 
     # Angular scale
     if logR==true
-        delta_r = delta(log.(r))
+        delta_r = delta(log.(r .+ logRshift))
     else
         delta_r = delta(r)
     end
