@@ -52,7 +52,7 @@ function spline_confidence_band(
                 )
             end
 
-            z_eval = log(r + 1)
+            z_eval = log(r)
 
         else
             z_eval = r
@@ -165,7 +165,7 @@ function plot_spline(
     # Recover the natural-radius values represented by fit.R.
     if fit.logR == true
 
-        R_natural = exp.(R_fit) .- 1
+        R_natural = exp.(R_fit)
 
     else
 
@@ -234,8 +234,8 @@ function plot_spline(
 
     elseif xscale == :log
 
-        x_grid = log.(r_grid .+ 1)
-        xlabel = "log(r + 1)"
+        x_grid = log.(r_grid)
+        xlabel = "log(r)"
 
     else
 

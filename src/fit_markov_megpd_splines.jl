@@ -64,7 +64,7 @@ function fit_markov_megpd_splines(
     R = pairs[:, 1] .+ pairs[:, 2]
 
     if logR==true
-        R = log.(1 .+ R)
+        R = log.(R)
     end
 
     if spline == :pspline

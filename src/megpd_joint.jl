@@ -29,7 +29,7 @@ function megpd_joint(
 
     # Angular scale
     if logR==true
-        delta_r = delta(log.(r .+ 1))
+        delta_r = delta(log.(r))
     else
         delta_r = delta(r)
     end
