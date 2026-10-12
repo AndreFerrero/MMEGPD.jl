@@ -14,10 +14,11 @@ function objective(
     x, # Matrix of pairs
     basis,
     S,
-    lambda;
-    map::Bool=false,
-    logR::Bool=false,
-    logRshift=0
+    lambda,
+    map,
+    logR,
+    logRshift,
+    hyper_inv_sin
 )
     eta = transform(psi)
 
@@ -38,7 +39,8 @@ function objective(
         xi,
         lambda,
         logR,
-        logRshift
+        logRshift,
+        hyper_inv_sin
     )
 
     if map
@@ -55,7 +57,7 @@ end
 
 function fit_markov_megpd_splines(
     x, K::Int64; spline=:crspline, knot_method=:even,
-    logR::Bool=false, logRshift=0.0,
+    logR::Bool=false, logRshift=0.0, hyper_inv_sin = false,
     degree=3, p=2, lambda=100.0, map::Bool=false,
     beta_init=nothing, kappa_init=1.0, sigma_init=1.0, xi_init=0.1,
     verbose::Bool=true, show_every::Int=10, g_abstol=1e-8, x_reltol=0.0
@@ -67,7 +69,11 @@ function fit_markov_megpd_splines(
 
     if logR==true
         R = log.(R .+ logRshift)
+
+    elseif hyper_inv_sin == true
+        R = asinh.(R)
     end
+
 
     if spline == :pspline
 
@@ -109,7 +115,9 @@ function fit_markov_megpd_splines(
 
     # the exact objective closure -- reused for both optimisation and
     # the Hessian, so they can never silently drift apart
-    negloglik = psi -> MMEGPD.objective(psi, pairs, basis, S, lambda; map=map, logR = logR, logRshift = logRshift)
+    negloglik = psi -> MMEGPD.objective(
+        psi, pairs, basis, S, lambda,
+        map, logR, logRshift, hyper_inv_sin)
 
     verbose && println("\n Starting optimisation...")
 
@@ -187,6 +195,7 @@ function fit_markov_megpd_splines(
         p=p,
         degree=degree,
         logR=logR,
-        logRshift=logRshift
+        logRshift=logRshift,
+        hyper_inv_sin=hyper_inv_sin
     )
 end

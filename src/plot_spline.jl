@@ -8,6 +8,8 @@ function spline_confidence_band(
     r_logscale = fit.logR
     logRshift = fit.logRshift
 
+    r_asinh_scale = fit.hyper_inv_sin
+
     basis = fit.basis
     beta = fit.beta
 
@@ -54,6 +56,9 @@ function spline_confidence_band(
             end
 
             z_eval = log(r .+ logRshift)
+
+        elseif r_asinh_scale
+            z_eval = asinh(r)
 
         else
             z_eval = r
@@ -169,6 +174,10 @@ function plot_spline(
 
         R_natural = exp.(R_fit) .- logRshift
 
+    elseif fit.hyper_inv_sin == true
+
+        R_natural = sinh.(R_fit)
+    
     else
 
         R_natural = R_fit
@@ -239,6 +248,11 @@ function plot_spline(
         x_grid = log.(r_grid .+ logRshift)
         xlabel = "log(r + $logRshift)"
 
+    elseif xscale == :asinh
+
+        x_grid = asinh.(r_grid)
+        xlabel = "asinh(r)"
+    
     else
 
         error(

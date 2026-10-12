@@ -6,7 +6,8 @@ function markov_megpd_loglik(
     sigma,
     xi,
     logR,
-    logRshift
+    logRshift,
+    hyper_inv_sin
 )
     # x is assumed to be the pairs matrix
 
@@ -39,7 +40,8 @@ function markov_megpd_loglik(
             delta;
             lpdf=true,
             logR = logR,
-            logRshift = logRshift
+            logRshift = logRshift,
+            hyper_inv_sin = hyper_inv_sin
         )
 
     end
@@ -59,7 +61,8 @@ function markov_megpd_loglik(
             delta;
             lpdf=true,
             logR = logR,
-            logRshift = logRshift
+            logRshift = logRshift,
+            hyper_inv_sin = hyper_inv_sin
         )
 
     end
@@ -79,7 +82,8 @@ function penalized_loglik(
     xi,
     lambda,
     logR,
-    logRshift
+    logRshift,
+    hyper_inv_sin
 )
 
     ll =
@@ -91,7 +95,8 @@ function penalized_loglik(
         sigma,
         xi,
         logR,
-        logRshift
+        logRshift,
+        hyper_inv_sin
     )
 
 
