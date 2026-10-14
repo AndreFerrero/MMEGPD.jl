@@ -14,7 +14,7 @@ function objective(
     x,
     basis,
     S,
-    lambda;
+    lambda,
     map::Bool=false
 )
     eta = transform(psi)
@@ -173,6 +173,7 @@ function fit_markov_megpd_splines(
         # data information
         x=x,
         R = R,
+        map=map,
         S=S, K=K,
         p=p,
         degree=degree,

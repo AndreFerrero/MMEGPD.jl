@@ -85,6 +85,129 @@ function laplace_log_marginal(fit;
     return marg_loglik
 end
 
+
+using LinearAlgebra
+using Random
+using Statistics
+
+"""
+    imp_sample_laplace(fit;
+        nsamples=10_000,
+        rng=Random.default_rng())
+
+Check the full-dimensional Laplace approximation using importance
+sampling with a Gaussian proposal centered at the fitted mode.
+
+The proposal covariance is inv(fit.hessian). The log-integrand is
+reconstructed from the same MMEGPD.objective used during fitting,
+including the MAP/Jacobian correction when fit.map == true.
+
+Returns the estimated log correction log(I / I_LA), the ratio I/I_LA,
+an importance-weight effective sample size, and a relative Monte Carlo
+standard error for the estimated ratio.
+
+The diagnostic concerns the integral defined by the fitted objective.
+Any prior-normalization constants independent of psi cancel in the ratio.
+"""
+function imp_sample_laplace(
+    fit;
+    nsamples::Int=10_000,
+    rng=Random.default_rng()
+)
+    nsamples > 1 || throw(ArgumentError("nsamples must exceed 1"))
+
+    # Recover exactly the data and model ingredients used during fitting.
+    pairs = MMEGPD.as_pairs(fit.x)
+    basis = fit.basis
+    S = fit.S
+    lambda = fit.lambda
+    map = fit.map
+
+    psi_hat = fit.psi
+    H = Matrix(fit.hessian)
+    d = length(psi_hat)
+
+    # Reconstruct the same negative log-integrand used for fitting.
+    # The MAP correction is included iff fit.map == true.
+    neglog_integrand = psi -> MMEGPD.objective(
+        psi, pairs, basis, S, lambda, map
+    )
+
+    log_integrand = psi -> -neglog_integrand(psi)
+
+    h_hat = log_integrand(psi_hat)
+
+    # Check that the stored fitted objective and reconstructed objective agree.
+    if !isapprox(h_hat, fit.pen_loglik; rtol=1e-8, atol=1e-8)
+        @warn "Reconstructed log-integrand at the mode differs from fit.pen_loglik"
+    end
+
+    # H must be the positive-definite Hessian of the negative
+    # log-integrand at psi_hat.
+    H = (H + H') / 2
+    C = try
+        cholesky(Symmetric(H))
+    catch e
+        @warn "Hessian is not positive definite; cannot construct Laplace proposal" exception=e
+        return (
+            log_ratio = NaN,
+            ratio = NaN,
+            ess = 0.0,
+            relative_mcse = Inf,
+            logweights = Float64[],
+            success = false
+        )
+    end
+
+    U = C.U
+    logweights = Vector{Float64}(undef, nsamples)
+
+    for i in 1:nsamples
+        z = randn(rng, d)
+
+        # If H = U' * U, this draw has covariance inv(H).
+        psi = psi_hat + U \ z
+
+        # Importance weight divided by the Laplace approximation.
+        logweights[i] =
+            log_integrand(psi) - h_hat + 0.5 * dot(z, z)
+    end
+
+    # Stable computation of log(mean(exp(logweights))).
+    a = maximum(logweights)
+
+    if !isfinite(a)
+        return (
+            log_ratio = NaN,
+            ratio = NaN,
+            ess = 0.0,
+            relative_mcse = Inf,
+            logweights = logweights,
+            success = false
+        )
+    end
+
+    scaled_weights = exp.(logweights .- a)
+    mean_scaled = mean(scaled_weights)
+
+    log_ratio = a + log(mean_scaled)
+
+    # ESS and relative Monte Carlo standard error of the ratio estimate.
+    ess = sum(scaled_weights)^2 / sum(abs2, scaled_weights)
+    relative_mcse =
+        std(scaled_weights) / sqrt(nsamples) / mean_scaled
+
+    return (
+        log_ratio = log_ratio,
+        ratio = exp(log_ratio),
+        ess = ess,
+        relative_mcse = relative_mcse,
+        logweights = logweights,
+        success = true
+    )
+end
+
+
 function numerical_log_marginal(
     fit;
     x,
