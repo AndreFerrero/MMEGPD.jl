@@ -99,7 +99,7 @@ function fit_markov_megpd_splines(
 
     # the exact objective closure -- reused for both optimisation and
     # the Hessian, so they can never silently drift apart
-    negloglik = psi -> MMEGPD.objective(psi, pairs, basis, S, lambda; map=map)
+    negloglik = psi -> MMEGPD.objective(psi, pairs, basis, S, lambda, map)
 
     verbose && println("\n Starting optimisation...")
 
