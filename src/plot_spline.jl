@@ -102,7 +102,8 @@ function plot_spline(
     plot_fn = true,
     level = 0.95,
     show_ci = true,
-    extrapolate = true
+    extrapolate = true,
+    delta_kwargs...
 )
     R = fit.R
     r_grid = collect(range(
@@ -125,7 +126,7 @@ function plot_spline(
 
     # True delta, only if supplied
     if delta_true !== nothing
-        delta_true_fn = MMEGPD.get_delta(delta_true)
+        delta_true_fn = MMEGPD.get_delta(delta_true; delta_kwargs...)
         delta_true_vals = [
             delta_true_fn(r) for r in r_grid
         ]

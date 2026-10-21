@@ -222,10 +222,17 @@ function simulate_markov_megpd(
     delta_name::Symbol;
     x0=1.0,
     burn_in_prop=0.0,
-    show_progress::Bool=true
+    show_progress::Bool=true,
+    delta_kwargs...
 )
 
-    delta = get_delta(delta_name)
+    delta = get_delta(
+        delta_name;
+        kappa = kappa,
+        sigma = sigma,
+        xi = xi,
+        delta_kwargs...
+    )
 
     simulate_markov_megpd(
         n_steps,
@@ -247,10 +254,17 @@ function multiple_megpd_chains(
     xi,
     delta_name::Symbol;
     x0=1.0,
-    burn_in_prop=0.0
+    burn_in_prop=0.0,
+    delta_kwargs...
 )
 
-    delta = get_delta(delta_name)
+    delta = get_delta(
+        delta_name;
+        kappa = kappa,
+        sigma = sigma,
+        xi = xi,
+        delta_kwargs...
+    )
 
     multiple_megpd_chains(
         n_chains,
