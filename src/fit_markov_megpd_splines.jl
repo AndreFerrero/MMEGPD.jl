@@ -50,7 +50,7 @@ function objective(
 end
 
 function fit_markov_megpd_splines(
-    x, K::Int64; spline=:pspline, knot_method=:even,
+    x, K::Int64; spline=:crspline, knot_method=:quantile,
     degree=3, p=2, lambda=100.0, map::Bool=false,
     beta_init=nothing, kappa_init=1.0, sigma_init=1.0, xi_init=0.1,
     verbose::Bool=true, show_every::Int=10, g_abstol=1e-8, x_reltol=0.0

@@ -321,15 +321,15 @@ here). Refits the penalised MLE at every proposed lambda, warm-started
 from the previous evaluation.
 """
 function laplace_optimize(x, K::Int64;
-    spline=:pspline, knot_method=:even,
+    spline=:crspline, knot_method=:quantile,
     degree::Int=3, p::Int=2,
     map=true,
-    lower::Float64=0.0, upper::Float64=4.0,
+    lower::Float64=0.0, upper::Float64=3.0,
     tol_rank::Float64=1e-8,
     beta_init=nothing, kappa_init::Float64=1.0,
     sigma_init::Float64=1.0, xi_init::Float64=0.1,
     verbose::Bool=false,
-    x_reltol::Float64=0.0, g_abstol::Float64=1e-8
+    x_reltol::Float64=1e-5, g_abstol::Float64=1e-8
 )
 
     # mutable warm-start cache closed over by the objective
