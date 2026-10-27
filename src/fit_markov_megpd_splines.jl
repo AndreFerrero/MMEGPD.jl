@@ -59,6 +59,25 @@ function fit_markov_megpd_splines(
 
     R = pairs[:, 1] .+ pairs[:, 2]
 
+    # Radial support check
+    if (xi_init < 0.0)
+        endpoint_init = - sigma_init/xi_init
+    else
+        endpoint_init = Inf
+    end
+
+    r_max = maximum(R)
+
+    if (r_max >= endpoint_init)
+        throw(ArgumentError(
+            "Invalid initial parameters: the maximum observed " *
+                "radius ($r_max) must be below the radial endpoint " *
+                "($endpoint_init). For ξ=$xi_init, σ must be greater than " *
+                "$(-xi_init * r_max)."
+        ))
+    end
+
+
     if spline == :pspline
 
         basis, = MMEGPD.bspline_basis(
@@ -155,8 +174,8 @@ function fit_markov_megpd_splines(
         psi=psi_hat,
         hessian=H,
         vcov_psi=V_psi,
-        se_psi = se_psi,
-        
+        se_psi=se_psi,
+
         # Natural-scale quantities
         eta=eta_hat,
         theta=(kappa_hat, sigma_hat, xi_hat),
@@ -169,10 +188,10 @@ function fit_markov_megpd_splines(
         se_sigma=se_eta[2],
         se_xi=se_eta[3],
         se_beta=se_eta[4:end],
-        
+
         # data information
         x=x,
-        R = R,
+        R=R,
         map=map,
         S=S, K=K,
         p=p,
