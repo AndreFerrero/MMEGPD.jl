@@ -58,9 +58,11 @@ include("laplace.jl")
 
 # Public API
 export 
+  as_pairs,
   egpd_cdf, egpd_lpdf, egpd_quantile, sample_egpd,
   simulate_markov_megpd, multiple_megpd_chains,
   megpd_joint, megpd_marginal,
+  markov_megpd_loglik, penalized_loglik,
   fit_markov_megpd_splines,
   spline_confidence_band, plot_spline,
   laplace_optimize, laplace_grid_search,
