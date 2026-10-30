@@ -147,7 +147,6 @@ function plot_spline(
             )
 
         else
-
             p = plot(
                 r_grid,
                 delta_hat,
@@ -175,16 +174,6 @@ function plot_spline(
             )
 
         end
-
-        # Estimated spline
-        plot!(
-            p,
-            r_grid,
-            delta_hat,
-            linewidth = 3,
-            color = :blue,
-            label = "estimated δ(r)"
-        )
 
         return p
     end

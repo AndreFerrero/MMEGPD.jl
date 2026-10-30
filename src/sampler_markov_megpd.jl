@@ -77,7 +77,7 @@ end
 
 # This is the main dispatcher function with the core logic
 function simulate_markov_megpd(
-    n_steps,
+    n,
     kappa,
     sigma,
     xi,
@@ -91,12 +91,12 @@ function simulate_markov_megpd(
         "burn_in_prop must be in [0,1)."
     ))
 
-    x = Vector{Float64}(undef, n_steps)
+    x = Vector{Float64}(undef, n)
     x[1] = x0
 
-    p = show_progress ? Progress(n_steps; desc="\n Simulating \n") : nothing
+    p = show_progress ? Progress(n; desc="\n Simulating \n") : nothing
 
-    for t in 2:n_steps
+    for t in 2:n
         x[t] = sample_conditional(
             x[t-1],
             kappa,
@@ -108,7 +108,7 @@ function simulate_markov_megpd(
         show_progress && next!(p)
     end
     
-    burn_in = floor(Int, n_steps * burn_in_prop)
+    burn_in = floor(Int, n * burn_in_prop)
     final_chain = x[(burn_in+1):end]
 
     return final_chain
@@ -116,7 +116,7 @@ end
 
 function multiple_megpd_chains(
     n_chains::Int,
-    n_steps::Int,
+    n::Int,
     kappa,
     sigma,
     xi,
@@ -125,8 +125,8 @@ function multiple_megpd_chains(
     burn_in_prop=0.0
 )
 
-    burn_in = floor(Int, n_steps * burn_in_prop)
-    chain_length = n_steps - burn_in
+    burn_in = floor(Int, n * burn_in_prop)
+    chain_length = n - burn_in
 
     chains = Matrix{Float64}(undef, chain_length, n_chains)
 
@@ -134,7 +134,7 @@ function multiple_megpd_chains(
 
         println("Simulation:", i)
         sim = simulate_markov_megpd(
-            n_steps,
+            n,
             kappa,
             sigma,
             xi,
@@ -152,7 +152,7 @@ end
 
 # this is the dispatcher for the case where delta needs to be reconstructed from the r grid and the estimated delta
 function simulate_markov_megpd(
-    n_steps,
+    n,
     kappa,
     sigma,
     xi,
@@ -166,7 +166,7 @@ function simulate_markov_megpd(
     delta_interp = build_delta_interp(r_grid, delta_hat)
 
     return simulate_markov_megpd(
-        n_steps,
+        n,
         kappa,
         sigma,
         xi,
@@ -179,7 +179,7 @@ end
 
 function multiple_megpd_chains(
     n_chains::Int,
-    n_steps::Int,
+    n::Int,
     kappa,
     sigma,
     xi,
@@ -188,15 +188,15 @@ function multiple_megpd_chains(
     x0=1.0,
     burn_in_prop=0.0
 )
-    burn_in = floor(Int, n_steps * burn_in_prop)
-    chain_length = n_steps - burn_in
+    burn_in = floor(Int, n * burn_in_prop)
+    chain_length = n - burn_in
 
     chains = Matrix{Float64}(undef, chain_length, n_chains)
 
     Threads.@threads for i in 1:n_chains
         println("Simulation:", i)
         sim = simulate_markov_megpd(
-            n_steps,
+            n,
             kappa,
             sigma,
             xi,
@@ -215,7 +215,7 @@ end
 
 # this is the dispatcher for currently implemented delta functions organised by symbols
 function simulate_markov_megpd(
-    n_steps,
+    n,
     kappa,
     sigma,
     xi,
@@ -235,7 +235,7 @@ function simulate_markov_megpd(
     )
 
     simulate_markov_megpd(
-        n_steps,
+        n,
         kappa,
         sigma,
         xi,
@@ -248,7 +248,7 @@ end
 
 function multiple_megpd_chains(
     n_chains::Int,
-    n_steps::Int,
+    n::Int,
     kappa,
     sigma,
     xi,
@@ -268,7 +268,7 @@ function multiple_megpd_chains(
 
     multiple_megpd_chains(
         n_chains,
-        n_steps,
+        n,
         kappa,
         sigma,
         xi,
