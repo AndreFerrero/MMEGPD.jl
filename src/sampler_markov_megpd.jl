@@ -107,7 +107,7 @@ function simulate_markov_megpd(
 
         show_progress && next!(p)
     end
-    
+
     burn_in = floor(Int, n * burn_in_prop)
     final_chain = x[(burn_in+1):end]
 
@@ -121,9 +121,12 @@ function multiple_megpd_chains(
     sigma,
     xi,
     delta;
-    x0=1.0,
+    x0=nothing,
     burn_in_prop=0.0
 )
+    if isnothing(x0)
+        x0 = fill(1.0, n_chains)
+    end
 
     burn_in = floor(Int, n * burn_in_prop)
     chain_length = n - burn_in
@@ -139,7 +142,7 @@ function multiple_megpd_chains(
             sigma,
             xi,
             delta;
-            x0=x0,
+            x0=x0[i],
             burn_in_prop=burn_in_prop,
             show_progress=false
         )
@@ -185,9 +188,13 @@ function multiple_megpd_chains(
     xi,
     r_grid::AbstractVector,
     delta_hat::AbstractVector;
-    x0=1.0,
+    x0=nothing,
     burn_in_prop=0.0
 )
+    if isnothing(x0)
+        x0 = fill(1.0, n_chains)
+    end
+
     burn_in = floor(Int, n * burn_in_prop)
     chain_length = n - burn_in
 
@@ -225,12 +232,11 @@ function simulate_markov_megpd(
     show_progress::Bool=true,
     delta_kwargs...
 )
-
     delta = get_delta(
         delta_name;
-        kappa = kappa,
-        sigma = sigma,
-        xi = xi,
+        kappa=kappa,
+        sigma=sigma,
+        xi=xi,
         delta_kwargs...
     )
 
@@ -253,16 +259,19 @@ function multiple_megpd_chains(
     sigma,
     xi,
     delta_name::Symbol;
-    x0=1.0,
+    x0=nothing,
     burn_in_prop=0.0,
     delta_kwargs...
 )
+    if isnothing(x0)
+        x0 = fill(1.0, n_chains)
+    end
 
     delta = get_delta(
         delta_name;
-        kappa = kappa,
-        sigma = sigma,
-        xi = xi,
+        kappa=kappa,
+        sigma=sigma,
+        xi=xi,
         delta_kwargs...
     )
 
