@@ -1,104 +1,37 @@
+# EGPD with CDF F(x) = G(x; sigma, xi)^kappa, where G is the GPD CDF.
+# Everything below is built on the functions in gpd.jl.
+
 function egpd_cdf(x, kappa, sigma, xi; lcdf = false)
-    sigma = max(sigma, 1e-12)
     kappa = max(kappa, 1e-12)
 
-    if xi == 0.0
-        gpd_cdf = 1 - exp(-x/sigma)
-    else
-        t = 1 + xi*x/sigma
-        t <= 0.0 && return lcdf ? -Inf : 0.0
-
-        gpd_cdf = 1 - exp((-1/xi) * log(t))
-    end
-
-    # numerical protection
-    gpd_cdf = clamp(gpd_cdf, 1e-300, 1.0)
-
-    out = kappa * log(gpd_cdf)
+    out = kappa * gpd_cdf(x, sigma, xi; lcdf = true)
 
     return lcdf ? out : exp(out)
 end
 
 function egpd_lpdf(x, kappa, sigma, xi; lpdf = true)
-    if xi == 0.0
-        return log(kappa) - log(sigma) - x/sigma + (kappa-1)*log(1 - exp(-x/sigma))
-    end
-    t = 1 + xi*x/sigma
-    t <= 0.0 && return -Inf
+    # log of the GPD density; -Inf outside the support
+    log_g = gpd_lpdf(x, sigma, xi; lpdf = true)
+    isinf(log_g) && return lpdf ? -Inf : 0.0
 
-    # log pdf of the GPD 
-    gpd_pdf = -log(sigma) + (-1/xi - 1)*log(t)
+    log_G = gpd_cdf(x, sigma, xi; lcdf = true)
 
-    gpd_cdf = max(1 - exp(-1/xi * log(t)), 1e-300)
-
-    out = log(kappa) + gpd_pdf + (kappa-1)*log(gpd_cdf)
+    out = log(kappa) + log_g + (kappa - 1) * log_G
 
     return lpdf ? out : exp(out)
 end
 
 function egpd_quantile(p, kappa, sigma, xi)
-
-    if xi == 0.0
-        return -sigma * log1p(-p^(1 / kappa))
-    else
-        return (sigma / xi) *
-               ((1 - p^(1 / kappa))^(-xi) - 1)
-    end
-
+    # F(x) = G(x)^kappa = p  <=>  x = G^{-1}(p^(1/kappa))
+    return gpd_quantile(exp(log(p) / kappa), sigma, xi)
 end
 
-function sample_egpd(
-    kappa,
-    sigma,
-    xi
-)
+sample_egpd(kappa, sigma, xi) = egpd_quantile(rand(), kappa, sigma, xi)
 
-    u = rand()
-
-    return egpd_quantile(
-        u,
-        kappa,
-        sigma,
-        xi
-    )
-
-end
-
-function sample_egpd(
-    n::Integer,
-    kappa,
-    sigma,
-    xi
-)
-
-    u = rand(n)
-
-    return egpd_quantile.(
-        u,
-        kappa,
-        sigma,
-        xi
-    )
-
-end
+sample_egpd(n::Integer, kappa, sigma, xi) = egpd_quantile.(rand(n), kappa, sigma, xi)
 
 function egpd_max_cdf(x, n, kappa, sigma, xi; lcdf = false)
-
-    # CDF of a single EGPD observation
-    log_F = egpd_cdf(
-        x,
-        kappa,
-        sigma,
-        xi;
-        lcdf = true
-    )
-
-    # CDF of the maximum:
-    #
-    # P(M_n <= x) = P(X_1 <= x, ..., X_n <= x)
-    #              = F(x)^n
-    #
-    log_F_max = n * log_F
-
+    # P(M_n <= x) = F(x)^n
+    log_F_max = n * egpd_cdf(x, kappa, sigma, xi; lcdf = true)
     return lcdf ? log_F_max : exp(log_F_max)
 end
