@@ -1,4 +1,4 @@
-# From unconstrained to natural space
+# From unconstrained to original space
 # ψ ----> η
 
 function transform(psi)
