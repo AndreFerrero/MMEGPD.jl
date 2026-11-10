@@ -29,6 +29,7 @@ import ForwardDiff
 
 # CORE FUNCTIONS
 include("delta.jl")
+include("gpd.jl")
 include("egpd.jl")
 include("megpd_joint.jl")
 include("megpd_cond.jl")
@@ -59,6 +60,7 @@ include("laplace.jl")
 # Public API
 export 
   as_pairs,
+  gpd_cdf, gpd_lpdf, gpd_quantile, sample_gpd
   egpd_cdf, egpd_lpdf, egpd_quantile, sample_egpd,
   simulate_markov_megpd, multiple_megpd_chains,
   megpd_joint, megpd_marginal,

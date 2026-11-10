@@ -87,13 +87,3 @@ Draw one (or `n`) samples from the GPD(sigma, xi).
 sample_gpd(sigma, xi) = gpd_quantile(rand(), sigma, xi)
 
 sample_gpd(n::Integer, sigma, xi) = gpd_quantile.(rand(n), sigma, xi)
-
-"""
-    gpd_max_cdf(x, n, sigma, xi; lcdf = false)
-
-CDF of the maximum of `n` i.i.d. GPD(sigma, xi) variables: G(x)^n.
-"""
-function gpd_max_cdf(x, n, sigma, xi; lcdf = false)
-    log_F_max = n * gpd_cdf(x, sigma, xi; lcdf = true)
-    return lcdf ? log_F_max : exp(log_F_max)
-end
