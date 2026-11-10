@@ -29,9 +29,3 @@ end
 sample_egpd(kappa, sigma, xi) = egpd_quantile(rand(), kappa, sigma, xi)
 
 sample_egpd(n::Integer, kappa, sigma, xi) = egpd_quantile.(rand(n), kappa, sigma, xi)
-
-function egpd_max_cdf(x, n, kappa, sigma, xi; lcdf = false)
-    # P(M_n <= x) = F(x)^n
-    log_F_max = n * egpd_cdf(x, kappa, sigma, xi; lcdf = true)
-    return lcdf ? log_F_max : exp(log_F_max)
-end
