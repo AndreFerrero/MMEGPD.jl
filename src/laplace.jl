@@ -320,56 +320,184 @@ penalised-MLE argmax via the envelope theorem, which is not implemented
 here). Refits the penalised MLE at every proposed lambda, warm-started
 from the previous evaluation.
 """
-function laplace_optimize(x, K::Int64;
-    spline=:crspline, knot_method=:quantile,
-    degree::Int=3, p::Int=2,
-    map=true,
-    lower::Float64=0.0, upper::Float64=3.0,
+function laplace_optimize(
+    x, K::Int;
+    spline=:crspline,
+    knot_method=:quantile,
+    degree::Int=3,
+    p::Int=2,
+    map::Bool=true,
+
+    # Model specification
+    bernstein::Bool=false,
+    bernstein_m::Int=5,
+
+    # Lambda search interval
+    lower::Float64=0.0,
+    upper::Float64=3.0,
     tol_rank::Float64=1e-8,
-    beta_init=nothing, kappa_init::Float64=1.0,
-    sigma_init::Float64=1.0, xi_init::Float64=0.1,
+
+    # Initial values
+    beta_init=nothing,
+    kappa_init::Float64=1.0,
+    sigma_init::Float64=1.0,
+    xi_init::Float64=0.1,
+    w_init=nothing,
+
+    # Optimisation settings
     verbose::Bool=false,
-    x_reltol::Float64=1e-5, g_abstol::Float64=1e-8
+    x_reltol::Float64=1e-5,
+    g_abstol::Float64=1e-8
 )
 
-    # mutable warm-start cache closed over by the objective
-    cache = Ref{Any}((beta=beta_init, kappa=kappa_init, sigma=sigma_init, xi=xi_init))
+    #################################
+    # Warm-start cache
+    #################################
+
+    cache = Ref{Any}((
+        beta=beta_init,
+        kappa=kappa_init,
+        sigma=sigma_init,
+        xi=xi_init,
+        w=w_init
+    ))
+
+    #################################
+    # Marginal likelihood objective
+    #################################
 
     function marg_loglik(log10_lam::Float64)
+
         lam = 10.0 ^ log10_lam
         c = cache[]
+
         fit = MMEGPD.fit_markov_megpd_splines(
-            x, K; spline=spline, knot_method=knot_method,
-            degree=degree, p=p, lambda=lam,
+            x, K;
+            spline=spline,
+            knot_method=knot_method,
+            degree=degree,
+            p=p,
+            lambda=lam,
             map=map,
-            beta_init=c.beta, kappa_init=c.kappa,
-            sigma_init=c.sigma, xi_init=c.xi,
-            verbose=verbose, x_reltol=x_reltol, g_abstol=g_abstol)
-        cache[] = (beta=fit.beta, kappa=fit.theta[1],
-            sigma=fit.theta[2], xi=fit.theta[3])
-        val = laplace_log_marginal(fit; tol_rank=tol_rank, drop_constant=true)
-        return isfinite(val) ? -val : Inf   # Optim minimises
+
+            # Model specification
+            bernstein=bernstein,
+            bernstein_m=bernstein_m,
+
+            # Warm start
+            beta_init=c.beta,
+            kappa_init=c.kappa,
+            sigma_init=c.sigma,
+            xi_init=c.xi,
+            w_init=c.w,
+
+            # Optimisation
+            verbose=verbose,
+            x_reltol=x_reltol,
+            g_abstol=g_abstol
+        )
+
+        #################################
+        # Update warm-start values
+        #################################
+
+        if bernstein
+
+            cache[] = (
+                beta=fit.beta,
+                kappa=fit.theta[1],
+                sigma=1.0,
+                xi=fit.theta[2],
+                w=fit.w
+            )
+
+        else
+
+            cache[] = (
+                beta=fit.beta,
+                kappa=fit.theta[1],
+                sigma=fit.theta[2],
+                xi=fit.theta[3],
+                w=nothing
+            )
+
+        end
+
+        #################################
+        # Laplace approximation
+        #################################
+
+        val = laplace_log_marginal(
+            fit;
+            tol_rank=tol_rank,
+            drop_constant=true
+        )
+
+        return isfinite(val) ? -val : Inf
+
     end
 
-    res = Optim.optimize(marg_loglik, lower, upper, Brent())
+    #################################
+    # Optimise log10(lambda)
+    #################################
+
+    res = Optim.optimize(
+        marg_loglik,
+        lower,
+        upper,
+        Brent()
+    )
 
     best_log10_lambda = Optim.minimizer(res)
     best_lambda = 10.0 ^ best_log10_lambda
     best_logL = -Optim.minimum(res)
 
-    c = cache[]
-    best_fit = MMEGPD.fit_markov_megpd_splines(
-        x, K; spline=spline, knot_method=knot_method,
-        degree=degree, p=p,
-        lambda=best_lambda,
-        map=false,
-        beta_init=c.beta, kappa_init=c.kappa,
-        sigma_init=c.sigma, xi_init=c.xi,
-        verbose=verbose, x_reltol=x_reltol)
+    #################################
+    # Final fit at optimal lambda
+    #################################
 
-    return (best_lambda=best_lambda, best_log10_lambda=best_log10_lambda,
-        best_logL=best_logL, best_fit=best_fit, optim_result=res)
+    c = cache[]
+
+    best_fit = MMEGPD.fit_markov_megpd_splines(
+        x, K;
+        spline=spline,
+        knot_method=knot_method,
+        degree=degree,
+        p=p,
+        lambda=best_lambda,
+        map=map,
+
+        # Model specification
+        bernstein=bernstein,
+        bernstein_m=bernstein_m,
+
+        # Warm start
+        beta_init=c.beta,
+        kappa_init=c.kappa,
+        sigma_init=c.sigma,
+        xi_init=c.xi,
+        w_init=c.w,
+
+        # Optimisation
+        verbose=verbose,
+        x_reltol=x_reltol,
+        g_abstol=g_abstol
+    )
+
+    #################################
+    # Return
+    #################################
+
+    return (
+        best_lambda=best_lambda,
+        best_log10_lambda=best_log10_lambda,
+        best_logL=best_logL,
+        best_fit=best_fit,
+        optim_result=res
+    )
+
 end
+
 
 
 

@@ -11,8 +11,8 @@ function spline_confidence_band(
     # Covariance matrix of beta
     #
     # fit.vcov is on the natural parameter scale:
-    # [kappa, sigma, xi, beta...]
-    V_beta = fit.vcov[4:end, 4:end]
+    K = fit.K
+    V_beta = fit.vcov[end-K+1:end, end-K+1:end]
 
     # Normal critical value
     z = quantile(
@@ -142,6 +142,16 @@ function plot_spline(
                 linewidth = 3,
                 color = :black,
                 label = "true δ(r)",
+                xlabel = "r",
+                ylabel = "δ(r)"
+            )
+
+            plot!(
+                r_grid,
+                delta_hat,
+                linewidth = 3,
+                color = :blue,
+                label = "estimated δ(r)",
                 xlabel = "r",
                 ylabel = "δ(r)"
             )

@@ -31,8 +31,9 @@ import ForwardDiff
 include("delta.jl")
 include("gpd.jl")
 include("egpd.jl")
+include("qqplot.jl")
+include("bernstein.jl")
 include("megpd_joint.jl")
-include("megpd_cond.jl")
 include("megpd_marginal.jl")
 include("as_pairs.jl")
 
@@ -62,13 +63,15 @@ export
   as_pairs,
   gpd_cdf, gpd_lpdf, gpd_quantile, sample_gpd
   egpd_cdf, egpd_lpdf, egpd_quantile, sample_egpd,
+  bernstein_density, bernstein_cdf, softmax_weights, weights_to_logits,
   simulate_markov_megpd, multiple_megpd_chains,
   megpd_joint, megpd_marginal,
   markov_megpd_loglik, penalized_loglik,
   fit_markov_megpd_splines,
   spline_confidence_band, plot_spline,
+  radial_qqplot,
   laplace_optimize, laplace_grid_search,
-  delta_strong_upper, delta08, delta_exp, build_delta_egpd_exp, get_delta,
+  delta_exp, delta08, delta_exp, build_delta_egpd_exp, get_delta,
   delta_spline
 
 end
