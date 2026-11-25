@@ -1,8 +1,3 @@
-using QuadGK
-using Roots
-using ProgressMeter
-using Random
-
 # Assumes the following are defined elsewhere (include this file after them):
 #   megpd_joint(x, x_prev, theta, delta)        -- standard EGPD
 #   megpd_joint(x, x_prev, theta, delta, w)     -- Bernstein EGPD
